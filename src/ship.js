@@ -6,27 +6,29 @@ export class Ship{
         this.el.src = '../images/ship.png'
         this.gameContainer.appendChild(this.el)
 
-        this.x = this.gameContainer.offsetWidth/ 2
-        this.y = this.gameContainer.offsetHeight -55
 
         this.el.style.position = 'absolute';  // Set position to absolute
-        this.el.style.left = `${this.x}px`;
+        
+        this.changeX(this.gameContainer.offsetWidth/ 2);
 
-        this.el.style.top = `${this.y}px`
+       this.changeY(this.gameContainer.offsetHeight -55)
     }
-    move() {
+ 
+    changeX(x){
+        this.x = x
         this.el.style.left = `${this.x}px`;
+    }
+    changeY(y){
+        this.y = y
         this.el.style.top = `${this.y}px`;
     }
 
     // Methods to move the ship
     moveLeft() {
-        this.x -= 5;
-        this.move();
+       this.changeX(this.x - 5)
     }
 
     moveRight() {
-        this.x += 5;
-        this.move();
+    this.changeX(this.x + 5)
     }
 }
