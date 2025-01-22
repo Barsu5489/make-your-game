@@ -1,34 +1,43 @@
-export class Ship{
+// import shipImage from '../images/spaceship.png';
+
+import {Entity} from "./entity.js";
+
+export class Ship extends Entity{
     constructor(){
-        this.gameContainer = document.getElementById('game')
-
-        this.el = document.createElement('img')
-        this.el.src = '../images/ship.png'
-        this.gameContainer.appendChild(this.el)
-
-
-        this.el.style.position = 'absolute';  // Set position to absolute
+        super({tag: 'img'});
+        // this.el = document.createElement('img');
+        this.el.src = "../images/spaceship.png"
+        document.body.appendChild(this.el);
+        this.el.style.width = '50px'
+        this.el.className = 'ship'
+        this.el.style.position = 'absolute'
+         this.canFire = true
+        this.setX(window.innerWidth/2)
+        this.el.style.left = `${this.x}px`  
+        this.setY( this.y =  window.innerHeight - 50)
         
-        this.changeX(this.gameContainer.offsetWidth/ 2);
-
-       this.changeY(this.gameContainer.offsetHeight -55)
     }
+
+  
+    moveLeft(){
+        this.setX(this.x -5)
+        // requestAnimationFrame(this.moveLeft)
+    }    
+    moveRight(){
+        this.setX(this.x +5)
+        // requestAnimationFrame(this.moveLeft)
+    }
+    fire({creatBullet}){
+        // this.canFire = false
+        if (this.canFire){
+
+            creatBullet({
+                x: Ship.x + 25, 
+                y: Ship.y
+            })
+            
+        }
  
-    changeX(x){
-        this.x = x
-        this.el.style.left = `${this.x}px`;
-    }
-    changeY(y){
-        this.y = y
-        this.el.style.top = `${this.y}px`;
-    }
-
-    // Methods to move the ship
-    moveLeft() {
-       this.changeX(this.x - 5)
-    }
-
-    moveRight() {
-    this.changeX(this.x + 5)
-    }
+     }
+   
 }
