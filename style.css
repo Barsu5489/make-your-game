@@ -1,12 +1,38 @@
-body{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+*{
+    padding: 0;
+    margin: 0;
+    background-color:black   ;
 }
-#game{
-    width: 600px;
-    height: 800px;
-    background-color: black;
-    position: fixed;
+/* .ball{
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-color: green;
+    bottom: 20px; 
+    left: 50%;
+    transform: translateX(-50%);
 }
+.weapon{
+    position: absolute;
+    width: 5px;
+    height: 20px;
+    background-color: red;
+} */
+
+.entity{
+    position:fixed;
+}
+ 
+.entitybullet {
+    width: 5px; 
+    height: 10px; 
+    position: absolute;
+    bottom: 50px;
+    background-color: red; 
+}
+
+    /* .aliens {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+    } */
