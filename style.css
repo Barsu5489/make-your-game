@@ -1,12 +1,108 @@
-body{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+#gameContainer {
+  width: 800px;
+  height: 600px;
+  position: relative;
+  background: black;
+  overflow: hidden;
+  margin: 0 auto;
 }
-#game{
-    width: 600px;
-    height: 800px;
-    background-color: black;
-    position: fixed;
+
+.enemy {
+  transition: transform 0.2s ease;
 }
+
+.enemy:hover {
+  transform: scale(1.1);
+}
+
+.bullet {
+  background: white;
+  border-radius: 2px;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+}
+
+.player {
+  transition: transform 0.2s ease;
+}
+
+.hit-effect {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: explode 0.3s forwards;
+  pointer-events: none;
+  z-index: 100;
+}
+
+@keyframes explode {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+
+
+/* #gameContainer {
+  width: 800px;
+  height: 600px;
+  position: relative;
+  background: black;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.enemy:hover {
+  transform: scale(1.1);
+}
+
+
+.enemy:hover {
+  transform: scale(1.1);
+}
+
+.hit-effect {
+  pointer-events: none;
+  z-index: 100;
+}
+@keyframes hit {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.5); }
+  100% { transform: scale(0); }
+}
+
+.hit {
+  animation: hit 0.2s forwards;
+}
+.bullet {
+  background: white;
+  border-radius: 2px;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+}
+
+.enemy {
+  background: #50C878;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(80, 200, 120, 0.5);
+  transition: transform 0.2s ease;
+}
+
+.player {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.hit-effect {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: explode 0.3s forwards;
+}
+
+@keyframes explode {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+} */
