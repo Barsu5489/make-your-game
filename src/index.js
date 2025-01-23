@@ -1,6 +1,7 @@
-import { Alien } from './Alien.js'
-import { Bullet } from './bullet.js'
-import {Ship} from './ship.js'
+import { Alien } from './Alien.js';
+import { Bullet } from './bullet.js';
+import {Ship} from './ship.js';
+import { PauseMenu } from './pausemenu.js';
 
 
 const keys = {
@@ -49,29 +50,105 @@ const isOverlapping = (entity1, entity2) => {
       rect1.top > rect2.bottom
     );
   };
-  class GameManager {
-      constructor() {
-          this.score = 0;
-          this.contain = document.getElementById('gameArea')
-          this.elem = document.createElement('span')
-          this.elem.className = 'score'
-          this.elem.textContent = "Score: " + `${this.score}`
-          this.contain.appendChild(this.elem)
-      }
-  
-      incrementScore() {
+// Update GameManager class in index.js
+class GameManager {
+    constructor() {
+        this.score = 0;
+        this.lives = 3;
+        this.time = 0;
+        this.isPaused = false;
+        this.timerInterval = null;
+
+        this.contain = document.getElementById('gameArea');
+        
+        // Score display
+        this.scoreElem = document.createElement('span');
+        this.scoreElem.className = 'score';
+        this.scoreElem.textContent = `Score: ${this.score}`;
+        this.contain.appendChild(this.scoreElem);
+
+        // Lives display
+        this.livesElem = document.createElement('span');
+        this.livesElem.className = 'lives';
+        this.livesElem.textContent = `Lives: ${this.lives}`;
+        this.contain.appendChild(this.livesElem);
+
+        // Timer display
+        this.timerElem = document.createElement('span');
+        this.timerElem.className = 'timer';
+        this.timerElem.textContent = 'Time: 0:00';
+        this.contain.appendChild(this.timerElem);
+
+        this.startTimer();
+    }
+
+    incrementScore() {
         this.score++;
         this.updateScoreDisplay();
     }
 
-    updateScoreDisplay() {
-        this.elem.textContent = "Score: "+`${this.score}`;
+    decrementLives() {
+        this.lives--;
+        this.updateLivesDisplay();
+        
+        if (this.lives <= 0) {
+            this.gameOver();
+        }
     }
-  }
+
+    updateScoreDisplay() {
+        this.scoreElem.textContent = `Score: ${this.score}`;
+    }
+
+    updateLivesDisplay() {
+        this.livesElem.textContent = `Lives: ${this.lives}`;
+    }
+
+    startTimer() {
+        this.timerInterval = setInterval(() => {
+            if (!this.isPaused) {
+                this.time++;
+                this.updateTimerDisplay();
+            }
+        }, 1000);
+    }
+
+    updateTimerDisplay() {
+        const minutes = Math.floor(this.time / 60);
+        const seconds = this.time % 60;
+        this.timerElem.textContent = `Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    toggleGamePause() {
+        this.isPaused = !this.isPaused;
+    }
+
+    resetGame() {
+        this.score = 0;
+        this.lives = 3;
+        this.time = 0;
+        this.updateScoreDisplay();
+        this.updateLivesDisplay();
+        this.updateTimerDisplay();
+        // Add any additional reset logic for aliens, ship, etc.
+    }
+
+    gameOver() {
+        clearInterval(this.timerInterval);
+        // Implement game over logic
+        alert(`Game Over! Score: ${this.score}`);
+    }
+}
   
   // In your game setup, you would have:
   const gameManager = new GameManager();
 
+const pauseMenu = new PauseMenu(gameManager);
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        pauseMenu.togglePause();
+    }
+});
 const getBulletLap = (entity)=>{
     for (let bullet of bullets) {
         if (isOverlapping(entity, bullet)) {
