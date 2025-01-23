@@ -1,12 +1,16 @@
 import {Entity} from "./entity.js";
 
+
+
+
 export class Alien extends Entity{
-        constructor({x,y, getBulletLap,removeAlien,removeBullet}){
+        constructor({x,y, getBulletLap,removeAlien,removeBullet, gameManager}){
             super({tag:'img'})
             this.el.src = "../images/ufo.png"
+            this.gameManager = gameManager;
             this.el.style.width = '50px'
             this.SPEED = 5
-
+            this.score = 0;
             this.direction = 'left'
             this.getBulletLap = getBulletLap
             this.removeAlien = removeAlien; 
@@ -34,8 +38,11 @@ export class Alien extends Entity{
         }
        const bullet = this.getBulletLap(this)
         if(bullet){
+            
             this.removeAlien(this);
             this.removeBullet(bullet);
+            this.gameManager.incrementScore()
+         
         }
     }
     remove() { this.el.remove(); }

@@ -49,6 +49,28 @@ const isOverlapping = (entity1, entity2) => {
       rect1.top > rect2.bottom
     );
   };
+  class GameManager {
+      constructor() {
+          this.score = 0;
+          this.contain = document.getElementById('gameArea')
+          this.elem = document.createElement('span')
+          this.elem.className = 'score'
+          this.elem.textContent = "Score: " + `${this.score}`
+          this.contain.appendChild(this.elem)
+      }
+  
+      incrementScore() {
+        this.score++;
+        this.updateScoreDisplay();
+    }
+
+    updateScoreDisplay() {
+        this.elem.textContent = "Score: "+`${this.score}`;
+    }
+  }
+  
+  // In your game setup, you would have:
+  const gameManager = new GameManager();
 
 const getBulletLap = (entity)=>{
     for (let bullet of bullets) {
@@ -60,6 +82,7 @@ const getBulletLap = (entity)=>{
 }
     
 const ship = new Ship();
+
 // const alien = new Alien()
 
 for (let row = 0; row < 5; row++){
@@ -69,9 +92,11 @@ for (let col = 0; col < 11; col++){
         y:row  * 80 + 50,
         getBulletLap,
         removeAlien,
-        removeBullet
+        removeBullet,
+        gameManager: gameManager 
     })
     aliens.push(alien)
+    // aliensGrid[row][col] = alien; 
 }
 
 }
@@ -95,12 +120,12 @@ const creatBullet = ({ x, y})=>{
         y: ship.y
         
     }))
-    console.log(x,y)
+    // console.log(x,y)
 }
 const update = ()=>{
 if (keys["ArrowLeft"] && ship.x > 50){
     console.log("left")
-    console.log(ship)
+    // console.log(ship)
     ship.moveLeft()
 }
 if (keys["ArrowRight"] && ship.x < window.innerWidth - 50 ){
@@ -109,11 +134,12 @@ if (keys["ArrowRight"] && ship.x < window.innerWidth - 50 ){
 }
 
 if (keys[" "]){
+    keys[' '] = false
     ship.fire({
         creatBullet
     })
-
-    console.log("Bullet",bullets )
+keys[' '] = false
+    // console.log("Bullet",bullets )
 
 }
 bullets.forEach((bullet)=>{
@@ -135,12 +161,12 @@ if (leftAlien.x < 80){
     })
 }
 const rightAlien = getRightMostAlien()
-console.log(rightAlien)
+// console.log(rightAlien)
 if (rightAlien.x > 900){
     aliens.forEach((alien)=>{
         alien.setDirectionLeft()
         alien.moveDown()
-        console.log(alien.moveDown())
+        // console.log(alien.moveDown())
     })
 }
 // console.log("Bullet",bullets )

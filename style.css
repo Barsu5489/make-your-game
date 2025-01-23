@@ -30,7 +30,12 @@
     bottom: 50px;
     background-color: red; 
 }
-
+.score{
+    position: absolute;
+    top: 50px;
+    right: 50px;
+    color: white;
+}
     /* .aliens {
         position: absolute;
         width: 50px;
