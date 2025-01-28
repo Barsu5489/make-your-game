@@ -1,28 +1,34 @@
 class Game {
-  constructor(){
+  constructor() {
     this.container = document.getElementById('gameContainer');
     this.lastTime = 0;
-    this.bullets = [];
     this.lastShot = 0;
-    this.shootingDelay = 100; 
+    this.shootingDelay = 250;
     this.score = 0;
     this.gameOver = false;
-    this.createScoreDisplay();
     this.level = 1;
     this.enemySpeedMultiplier = 1;
-    this.player = new Player(this.container);
-    this.enemyGrid = new EnemyGrid(this.container);
-    this.inputHandler = new InputHandler(this);
-    this.init();
     this.lives = 3;
     this.isPaused = false;
     this.startTime = Date.now();
-    this.enemyBullets = [];
     this.lastEnemyShot = 0;
-    this.enemyShootingDelay = 500; // Enemies shoot every 1 second
+    this.enemyShootingDelay = 500;
+    this.screenShake = false;
+    this.fps = 60;
+    this.frameInterval = 1000 / this.fps;
+    this.accumulator = 0;
+    // Initialize bullet pools
+    this.bulletPool = new BulletPool(this.container);
+    this.enemyBulletPool = new BulletPool(this.container, 30);
+    
+    this.createScoreDisplay();
+    this.player = new Player(this.container);
+    this.enemyGrid = new EnemyGrid(this.container);
+    this.inputHandler = new InputHandler(this);
     this.createPauseMenu();
     this.createCompleteScoreboard();
     
+    this.init();
   }
 
 preloadImages() {
@@ -42,37 +48,57 @@ preloadImages() {
 init(){
   requestAnimationFrame(this.gameloop.bind(this));
 }  
+
 gameloop(timestamp) {
-  // Remove the FPS check to let rAF handle timing
+  if (this.gameOver) return;
+
   const deltaTime = timestamp - this.lastTime;
   this.lastTime = timestamp;
-  
+  this.accumulator += deltaTime;
+
+  // Update game state at fixed time steps
+  while (this.accumulator >= this.frameInterval) {
+    if (!this.isPaused) {
+      this.update(this.frameInterval);
+    }
+    this.accumulator -= this.frameInterval;
+  }
+
+  // Render at screen refresh rate
   if (!this.isPaused) {
-    this.update(deltaTime);
     this.render();
   }
-  
-  if (!this.gameOver) {
-    requestAnimationFrame(this.gameloop.bind(this));
-  }
+
+  requestAnimationFrame(this.gameloop.bind(this));
 }
 update(deltaTime) {
   if (this.gameOver || this.isPaused) return;
 
-  // Handle player movement
-  if (this.inputHandler.keys.ArrowLeft) {
-    this.player.move(-1, deltaTime);
-  }
-  if (this.inputHandler.keys.ArrowRight) {
-    this.player.move(1, deltaTime);
-  }
-  if (this.inputHandler.keys.Space) {
-    this.shoot();
-  }
+    // Handle player movement
+    if (this.inputHandler.keys.ArrowLeft) {
+      this.player.move(-1, deltaTime);
+    }
+    if (this.inputHandler.keys.ArrowRight) {
+      this.player.move(1, deltaTime);
+    }
+    
+    // Check for shooting
+    if (this.inputHandler.keys.Space) {
+      this.shoot();
+    }
 
-  // Update bullets
-  this.bullets = this.bullets.filter(bullet => bullet.active);
-  this.bullets.forEach(bullet => bullet.update(deltaTime));
+    this.bulletPool.pool.forEach(bullet => {
+      if (bullet.active) {
+        bullet.update(deltaTime);
+      }
+    });
+    
+    // Update enemy bullets
+    this.enemyBulletPool.pool.forEach(bullet => {
+      if (bullet.active) {
+        bullet.update(deltaTime);
+      }
+    });
 
   // Update enemies
   this.enemyGrid.update(deltaTime);
@@ -95,60 +121,30 @@ render() {
   }
 
   // Update player position
-  this.player.element.style.left = `${this.player.x}px`;
+  this.player.element.style.transform = `translateX(${this.player.x}px)`;
 
   // Update bullet positions
-  this.bullets.forEach(bullet => {
-      if (bullet.active) {
-          bullet.element.style.top = `${bullet.y}px`;
-          bullet.element.style.left = `${bullet.x}px`;
-      }
+  this.bulletPool.pool.forEach(bullet => {
+    if (bullet.active) {
+      bullet.element.style.transform = `translate(${bullet.x}px, ${bullet.y}px)`;
+    }
+  });
+  
+  this.enemyBulletPool.pool.forEach(bullet => {
+    if (bullet.active) {
+      bullet.element.style.transform = `translate(${bullet.x}px, ${bullet.y}px)`;
+    }
   });
 
   // Update enemy positions
   this.enemyGrid.enemies.forEach(enemy => {
-      enemy.element.style.left = `${enemy.x}px`;
-      enemy.element.style.top = `${enemy.y}px`;
+    enemy.element.style.transform = `translate(${enemy.x}px, ${enemy.y}px)`;
   });
 
   // Update score display
   this.scoreElement.textContent = `Score: ${this.score} | Level: ${this.level}`;
 
-  // Add visual feedback for hits
-  this.bullets.forEach(bullet => {
-      if (!bullet.active) {
-          // Create hit effect
-          const hitEffect = document.createElement('div');
-          hitEffect.className = 'hit-effect';
-          hitEffect.style.cssText = `
-              position: absolute;
-              width: 20px;
-              height: 20px;
-              background: rgba(255, 255, 255, 0.8);
-              border-radius: 50%;
-              left: ${bullet.x - 8}px;
-              top: ${bullet.y - 8}px;
-              animation: hit-flash 0.2s forwards;
-          `;
-          this.container.appendChild(hitEffect);
-          
-          // Remove the hit effect after animation
-          setTimeout(() => hitEffect.remove(), 200);
-      }
-  });
 
-  // Add CSS for hit effect animation if not already present
-  if (!document.querySelector('#game-animations')) {
-      const style = document.createElement('style');
-      style.id = 'game-animations';
-      style.textContent = `
-          @keyframes hit-flash {
-              0% { transform: scale(0.5); opacity: 1; }
-              100% { transform: scale(1.5); opacity: 0; }
-          }
-      `;
-      document.head.appendChild(style);
-  }
 }
 createCompleteScoreboard() {
   this.scoreboardElement = document.createElement('div');
@@ -242,9 +238,7 @@ togglePause() {
 handleEnemyShooting(deltaTime) {
   const now = Date.now();
   if (now - this.lastEnemyShot >= this.enemyShootingDelay) {
-    // Randomly select an enemy to shoot
     const shootingEnemies = this.enemyGrid.enemies.filter(enemy => 
-      // Only enemies with no other enemies directly below them can shoot
       !this.enemyGrid.enemies.some(other => 
         other.col === enemy.col && other.row > enemy.row
       )
@@ -252,67 +246,73 @@ handleEnemyShooting(deltaTime) {
     
     if (shootingEnemies.length > 0) {
       const shooter = shootingEnemies[Math.floor(Math.random() * shootingEnemies.length)];
-      const bullet = new Bullet(
-        this.container,
-        shooter.x + 15, // Center of enemy
-        shooter.y + 30, // Below enemy
-        true // isEnemy = true
+      const bullet = this.enemyBulletPool.getBullet(
+        shooter.x + 15,
+        shooter.y + 30,
+        true
       );
-      this.enemyBullets.push(bullet);
       this.lastEnemyShot = now;
     }
   }
   
-  // Update enemy bullets
-  this.enemyBullets = this.enemyBullets.filter(bullet => bullet.active);
-  this.enemyBullets.forEach(bullet => bullet.update(deltaTime));
+  // Update all bullets from both pools
+  this.bulletPool.pool.forEach(bullet => {
+    if (bullet.active) bullet.update(deltaTime);
+  });
+  
+  this.enemyBulletPool.pool.forEach(bullet => {
+    if (bullet.active) bullet.update(deltaTime);
+  });
 }
 handlePlayerHit() {
-  // Visual feedback
+  this.screenShake = true;
   this.player.element.style.opacity = '0.5';
+  
   setTimeout(() => {
     this.player.element.style.opacity = '1';
+    this.screenShake = false;
   }, 200);
+  
+  this.lives--;
   
   if (this.lives <= 0) {
     this.endGame();
   }
 }
+// In the Game class, update the shoot() method
 shoot() {
   const now = Date.now();
   if (now - this.lastShot >= this.shootingDelay) {
-    const bullet = new Bullet(
-    this.container, 
-    this.player.x + 18, // Center of player
-    550 // Just above player
-   );
-   this.bullets.push(bullet);
-   this.lastShot = now;
+    const bulletX = this.player.x + (this.player.element.offsetWidth / 2) - 1;
+    const bullet = this.bulletPool.getBullet(bulletX, 550, false);
+    this.lastShot = now;
   }
 }
 
+checkCollisions() {
+  // Check player bullets with enemies
+  this.bulletPool.pool.forEach(bullet => {
+    if (!bullet.active) return;
 
-  checkCollisions() {
-    this.bullets.forEach(bullet => {
-        if (!bullet.active) return;
-
-        this.enemyGrid.enemies.forEach(enemy => {
-            if (this.isColliding(bullet, enemy)) {
-                bullet.deactivate();
-                this.removeEnemy(enemy);
-                this.score += 100;
-            }
-        });
-    });
-    this.enemyBullets.forEach(bullet => {
-      if (!bullet.active) return;
-      
-      if (this.isColliding(bullet, this.player)) {
+    this.enemyGrid.enemies.forEach(enemy => {
+      if (this.isColliding(bullet, enemy)) {
         bullet.deactivate();
-        this.lives--;
-        this.handlePlayerHit();
+        this.removeEnemy(enemy);
+        this.score += 100;
       }
     });
+  });
+
+  // Check enemy bullets with player
+  this.enemyBulletPool.pool.forEach(bullet => {
+    if (!bullet.active) return;
+    
+    if (this.isColliding(bullet, this.player)) {
+      bullet.deactivate();
+      this.lives--;
+      this.handlePlayerHit();
+    }
+  });
 }
 
 isColliding(bullet, enemy) {
@@ -395,12 +395,10 @@ showGameOverScreen(message) {
 }
 
 restart() {
-  // Clear all elements
+  // Clear container
   this.container.innerHTML = '';
   
   // Reset game state
-  this.bullets = [];
-  this.enemyBullets = [];
   this.lastShot = 0;
   this.score = 0;
   this.gameOver = false;
@@ -410,14 +408,18 @@ restart() {
   this.enemySpeedMultiplier = 1;
   this.startTime = Date.now();
   
-  // Recreate all game elements
+  // Create new bullet pools
+  this.bulletPool = new BulletPool(this.container);
+  this.enemyBulletPool = new BulletPool(this.container);
+  
+  // Recreate game elements
   this.createScoreDisplay();
   this.createCompleteScoreboard();
   this.createPauseMenu();
   this.player = new Player(this.container);
   this.enemyGrid = new EnemyGrid(this.container);
   
-  // Restart the game loop
+  // Restart game loop
   this.lastTime = performance.now();
   requestAnimationFrame(this.gameloop.bind(this));
 }
@@ -433,33 +435,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const game = new Game();
 });
 class Player {
-  constructor(container){
+  constructor(container) {
     this.element = document.createElement('div');
     this.element.className = 'player';
-    this.x = 400;
-    this.speed = 0.5;
+    this.x = 380; // Center position (800 - playerWidth) / 2
+    this.speed = 0.3;
     this.container = container;
-    this.init()
+    this.width = 30; 
+    this.init();
+  }
 
-  }
   init() {
-    this.element.style.cssText = `
-      position: absolute;
-      width: 40px;
-      height: 40px;
-      bottom: 20px;
-      left: ${this.x}px;
-      background-image: url('./ship.png');
-      background-size: cover;
-      background-position: center;
-    `;
     this.container.appendChild(this.element);
+    this.element.style.transform = `translateX(${this.x}px)`; // Initial position
   }
+
   move(direction, deltaTime) {
     this.x += direction * this.speed * deltaTime;
-    this.x = Math.max(0, Math.min(760, this.x)); // boundaries
-    this.element.style.left = `${this.x}px`;
- }
+    // Update boundary check to account for player width
+    const maxX = this.container.offsetWidth - this.width;
+    this.x = Math.max(0, Math.min(maxX, this.x));
+    this.element.style.transform = `translateX(${this.x}px)`;
+  }
 }
 class Enemy {
   constructor(container, x, y, row, col) {
@@ -470,7 +467,9 @@ class Enemy {
     this.row = row;
     this.col = col;
     this.direction = 1;
-    this.speed = 0.1;
+    this.speed = 0.05;
+    this.width = 30;  // Add explicit width
+    this.height = 30; 
     this.alienTypes = [
       './alien.png',
       './alien-cyan.png',
@@ -481,115 +480,144 @@ class Enemy {
   }
 
   init(container) {
-    // Select alien type based on row
     const alienType = this.alienTypes[this.row % this.alienTypes.length];
-    
-    this.element.style.cssText = `
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      left: ${this.x}px;
-      top: ${this.y}px;
-      background-image: url('${alienType}');
-      background-size: cover;
-      background-position: center;
-    `;
+    this.element.style.backgroundImage = `url('${alienType}')`;
+    this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
     container.appendChild(this.element);
   }
 
   move(deltaTime) {
-      this.x += this.direction * this.speed * deltaTime;
-      this.element.style.left = `${this.x}px`;
+    this.x += this.direction * this.speed * deltaTime;
+    this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
   }
 
   moveDown() {
-      this.y += 30;
-      this.element.style.top = `${this.y}px`;
-      this.direction *= -1;
+    this.y += 30;
+    this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
+    this.direction *= -1;
   }
 }
 class EnemyGrid {
   constructor(container) {
-      this.container = container;
-      this.enemies = [];
-      this.moveDownFlag = false;
-      this.init();
+    this.container = container;
+    this.enemies = [];
+    this.moveDownFlag = false;
+    this.enemyWidth = 30;
+    this.enemySpacing = 40;
+    this.leftBound = 20;
+    this.rightBound = container.offsetWidth - (this.enemyWidth + 20);
+    this.init();
   }
 
   init() {
-      for (let row = 0; row < 5; row++) {
-          for (let col = 0; col < 11; col++) {
-              const enemy = new Enemy(
-                  this.container,
-                  100 + col * 50,
-                  50 + row * 50,
-                  row,
-                  col
-              );
-              this.enemies.push(enemy);
-          }
+    const fragment = document.createDocumentFragment();
+    for (let row = 0; row < 5; row++) {
+      for (let col = 0; col < 8; col++) {
+        const enemy = new Enemy(
+          fragment,
+          col * this.enemySpacing + this.leftBound,
+          row * this.enemySpacing + 40,
+          row,
+          col
+        );
+        this.enemies.push(enemy);
       }
+    }
+    this.container.appendChild(fragment);
   }
 
   update(deltaTime) {
-      let shouldMoveDown = false;
+    let shouldMoveDown = false;
+    
+    this.enemies.forEach(enemy => {
+      enemy.move(deltaTime);
       
-      this.enemies.forEach(enemy => {
-          enemy.move(deltaTime);
-          
-          // Check boundaries
-          if (enemy.x < 50 || enemy.x > 700) {
-              shouldMoveDown = true;
-          }
-      });
-
-      if (shouldMoveDown && !this.moveDownFlag) {
-          this.enemies.forEach(enemy => enemy.moveDown());
-          this.moveDownFlag = true;
-      } else if (!shouldMoveDown) {
-          this.moveDownFlag = false;
+      // Update boundary check
+      if (enemy.x < this.leftBound || enemy.x > this.rightBound) {
+        shouldMoveDown = true;
       }
+    });
+
+    if (shouldMoveDown && !this.moveDownFlag) {
+      this.enemies.forEach(enemy => enemy.moveDown());
+      this.moveDownFlag = true;
+    } else if (!shouldMoveDown) {
+      this.moveDownFlag = false;
+    }
+  }
+}
+class BulletPool {
+  constructor(container, poolSize = 30) {
+    this.pool = [];
+    this.container = container;
+    
+    // Pre-initialize pool
+    for (let i = 0; i < poolSize; i++) {
+      const bullet = new Bullet(container, 0, 0, false);
+      bullet.active = false; // Make sure bullets start inactive
+      this.pool.push(bullet);
+    }
+  }
+
+  getBullet(x, y, isEnemy) {
+    // Find first inactive bullet
+    let bullet = this.pool.find(b => !b.active);
+    
+    // If no inactive bullets found, create a new one
+    if (!bullet) {
+      bullet = new Bullet(this.container, x, y, isEnemy);
+      this.pool.push(bullet);
+    }
+    
+    bullet.reset(x, y, isEnemy);
+    bullet.active = true; // Explicitly set active
+    return bullet;
   }
 }
 class Bullet {
   constructor(container, x, y, isEnemy = false) {
-      this.element = document.createElement('div');
-      this.element.className = `bullet ${isEnemy ? 'enemy-bullet' : 'player-bullet'}`;
-      this.x = x;
-      this.y = y;
-      this.speed = isEnemy ? 0.3 : -0.5; // Negative for moving up
-      this.active = true;
-      
-      this.init(container);
+    this.element = document.createElement('div');
+    this.element.className = `bullet ${isEnemy ? 'enemy-bullet' : 'player-bullet'}`;
+    this.x = x;
+    this.y = y;
+    this.speed = isEnemy ? 0.2 : -0.4;
+    this.active = false;
+    this.container = container;
+    this.init(container);
   }
 
   init(container) {
-      this.element.style.cssText = `
-          position: absolute;
-          width: 4px;
-          height: 12px;
-          background: white;
-          left: ${this.x}px;
-          top: ${this.y}px;
-      `;
-      container.appendChild(this.element);
+    container.appendChild(this.element);
+    this.element.style.display = 'none';
   }
 
   update(deltaTime) {
-      if (!this.active) return;
-      
-      this.y += this.speed * deltaTime;
-      this.element.style.top = `${this.y}px`;
+    if (!this.active) return;
+    
+    this.y += this.speed * deltaTime;
+    
+    // Update position
+    this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
 
-      // Remove if out of bounds
-      if (this.y < 0 || this.y > 600) {
-          this.deactivate();
-      }
+    // Check boundaries
+    if (this.y < 0 || this.y > 580) {
+      this.deactivate();
+    }
   }
 
   deactivate() {
-      this.active = false;
-      this.element.remove();
+    this.active = false;
+    this.element.style.display = 'none';
+  }
+
+  reset(x, y, isEnemy) {
+    this.x = x;
+    this.y = y;
+    this.speed = isEnemy ? 0.2 : -0.4;
+    this.active = true;
+    this.element.className = `bullet ${isEnemy ? 'enemy-bullet' : 'player-bullet'}`;
+    this.element.style.display = 'block';
+    this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
   }
 }
 class InputHandler {
@@ -602,10 +630,10 @@ class InputHandler {
 
     window.addEventListener('keydown', (e) => {
       if (this.keys.hasOwnProperty(e.code)) {
+        e.preventDefault(); // Prevent page scrolling
         this.keys[e.code] = true;
       }
-      
-      // Handle Enter key for restart
+            // Handle Enter key for restart
       if (e.code === 'Enter' && game.gameOver) {
         game.restart();
       }
@@ -615,12 +643,15 @@ class InputHandler {
         game.togglePause();
       }
     });
-
+    
+    
     window.addEventListener('keyup', (e) => {
       if (this.keys.hasOwnProperty(e.code)) {
+        e.preventDefault();
         this.keys[e.code] = false;
       }
     });
+
   }
 }
 

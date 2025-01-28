@@ -1,108 +1,112 @@
 #gameContainer {
+  position: relative;
   width: 800px;
   height: 600px;
-  position: relative;
-  background: black;
+  background-color: #000;
   overflow: hidden;
   margin: 0 auto;
 }
 
-.enemy {
-  transition: transform 0.2s ease;
+.player {
+  position: absolute;
+  bottom: 40px;
+  width: 30px;
+  height: 30px;
+  background-image: url('./ship.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  transform: translateX(0);
+  will-change: transform;
 }
 
-.enemy:hover {
-  transform: scale(1.1);
+.enemy {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  will-change: transform;
 }
 
 .bullet {
-  background: white;
-  border-radius: 2px;
-  box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  position: absolute;
+  width: 2px;
+  height: 12px;
+  will-change: transform;
 }
 
-.player {
-  transition: transform 0.2s ease;
+.player-bullet {
+  background-color: #fff;
+}
+
+.enemy-bullet {
+  background-color: #ff4444;
 }
 
 .hit-effect {
   position: absolute;
+  pointer-events: none;
+  z-index: 50;
+  will-change: transform, opacity;
+}
+/* .player {
+  position: absolute;
+  bottom: 20px;
+  width: 40px;
+  height: 40px;
+  background-image: url('./ship.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  transform: translateX(0);
+  will-change: transform;
+}
+
+.enemy {
+  position: absolute;
   width: 30px;
   height: 30px;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 50%;
-  animation: explode 0.3s forwards;
-  pointer-events: none;
-  z-index: 100;
+  background-size: contain;
+  background-repeat: no-repeat;
+  will-change: transform;
 }
 
-@keyframes explode {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(2); opacity: 0; }
+.bullet {
+  position: absolute;
+  width: 4px;
+  height: 10px;
+  will-change: transform;
 }
 
+.player-bullet {
+  background-color: #fff;
+}
 
+.enemy-bullet {
+  background-color: #ff4444;
+}
 
-/* #gameContainer {
+#gameContainer {
+  position: relative;
   width: 800px;
   height: 600px;
-  position: relative;
-  background: black;
+  background-color: #000;
   overflow: hidden;
   margin: 0 auto;
 }
 
-.enemy:hover {
-  transform: scale(1.1);
-}
-
-
-.enemy:hover {
-  transform: scale(1.1);
-}
-
-.hit-effect {
-  pointer-events: none;
-  z-index: 100;
-}
-@keyframes hit {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.5); }
-  100% { transform: scale(0); }
-}
-
-.hit {
-  animation: hit 0.2s forwards;
-}
-.bullet {
-  background: white;
-  border-radius: 2px;
-  box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
-}
-
-.enemy {
-  background: #50C878;
-  border-radius: 4px;
-  box-shadow: 0 0 10px rgba(80, 200, 120, 0.5);
-  transition: transform 0.2s ease;
-}
-
-.player {
-  background: white;
-  border-radius: 4px;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-}
-
 .hit-effect {
   position: absolute;
-  width: 30px;
-  height: 30px;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 50%;
-  animation: explode 0.3s forwards;
+  pointer-events: none;
 }
 
-@keyframes explode {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(2); opacity: 0; }
+@keyframes hit-flash {
+  0% { 
+    transform: scale(0.5); 
+    opacity: 1; 
+  }
+  100% { 
+    transform: scale(1.5); 
+    opacity: 0; 
+  }
 } */
+
