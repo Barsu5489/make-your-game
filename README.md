@@ -75,7 +75,7 @@ A modern browser-based Space Invaders game created using vanilla JavaScript, HTM
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/space-invaders.git
+   git clone https://github.com/skanenje/space_invader-jsgame
    cd space-invaders
 ## ⚡ Performance Optimization  
 
