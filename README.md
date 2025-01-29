@@ -105,3 +105,6 @@ For a **smoother 60 FPS experience**, you can disable GPU acceleration in Chrome
 
 ```bash
 chrome.exe --disable-gpu
+```
+
+or toggle it off in chrome (setting > system )Tab
