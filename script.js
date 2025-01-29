@@ -67,6 +67,7 @@ gameloop(timestamp) {
   // Render at screen refresh rate
   if (!this.isPaused) {
     this.render();
+    this.updateScoreboard();
   }
 
   requestAnimationFrame(this.gameloop.bind(this));
