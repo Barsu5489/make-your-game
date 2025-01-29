@@ -7,7 +7,7 @@ A modern browser-based Space Invaders game created using vanilla JavaScript, HTM
 ## 🚀 Features
 
 - **Player Movement**: Move left or right to evade enemies and position yourself for shots.
-- **Shooting Mechanics**: Shoot bullets to destroy enemies. Bullets have a visual feedback effect on impact.
+- **Shooting Mechanics**: Shoot bullets to destroy enemies. 
 - **Dynamic Enemy Grid**: Enemies move in a grid and speed up as you level up.
 - **Collision Detection**: Ensures accurate hit registration between bullets and enemies.
 - **Score and Level Tracking**: Displays your current score and level in real-time.
@@ -27,7 +27,10 @@ A modern browser-based Space Invaders game created using vanilla JavaScript, HTM
 
 ## 📂 Project Structure
 
-├── index.html # Main HTML file ├── style.css # Styles for the game ├── game.js # Core game logic and classes └── assets/ # (Optional) Place for any images or additional resources
+├── index.html # Main HTML file 
+├── style.css # Styles for the game 
+├── src  #Core game logic and classes 
+└── assets/ # (Optional) Place for any images or additional resources
 
 
 ---
