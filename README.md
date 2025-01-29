@@ -27,15 +27,14 @@ A modern browser-based Space Invaders game created using vanilla JavaScript, HTM
 
 ## 📂 Project Structure
 
-├── index.html # Main HTML file
-├── style.css # Styles for the game
-├── game.js # Core game logic and classes └── assets/ # (Optional) Place for any images or additional resources
+├── index.html # Main HTML file ├── style.css # Styles for the game ├── game.js # Core game logic and classes └── assets/ # (Optional) Place for any images or additional resources
+
 
 ---
 
 ## 🎮 How to Play
 
-1. Open the game in your browser (index.html).
+1. Open the game in your browser (`index.html`).
 2. Use the following controls:
    - **Arrow Left**: Move left.
    - **Arrow Right**: Move right.
@@ -74,4 +73,35 @@ A modern browser-based Space Invaders game created using vanilla JavaScript, HTM
 1. Clone the repository:
    ```bash
    git clone https://github.com/yourusername/space-invaders.git
-cd space-invaders
+   cd space-invaders
+## ⚡ Performance Optimization  
+
+### Why Disable GPU Acceleration?  
+
+You might expect GPU acceleration to always improve performance, but in some cases—like this game—it can actually introduce **frame drops**. When hardware acceleration is enabled in Chrome, the browser tries to offload rendering tasks to the GPU, but this can backfire due to:  
+
+### 🖼️ Layer Promotion and Memory Overhead  
+- Chrome promotes elements to their own compositor layers when using **transforms** and `will-change`.  
+- Since the game has **many bullets, enemies, and animated elements**, this results in **many individual layers**.  
+- Each layer consumes **GPU memory** and requires management overhead.  
+- Too many layers can slow rendering, as the GPU has to **composite them all together**.  
+
+### 🔄 Context Switching  
+- When elements frequently update their **transforms**, the browser **switches between CPU and GPU processing**.  
+- This **context switching** introduces **overhead and latency**.  
+- In a **fast-paced game** where multiple objects move every frame, this switching cost might **outweigh the benefits of GPU acceleration**.  
+
+### 🚀 Memory Bandwidth Limitations  
+- GPU acceleration is best for **complex animations on a few elements**.  
+- This game has **many simple elements** (bullets, enemies) updating every frame.  
+- The bandwidth required to **send all these updates to the GPU** can become a **bottleneck**.  
+- The **CPU can sometimes handle these simpler draws more efficiently** without GPU acceleration.  
+
+---
+
+## 🛠️ How to Disable GPU Acceleration in Chrome  
+
+For a **smoother 60 FPS experience**, you can disable GPU acceleration in Chrome by launching it with this flag:  
+
+```bash
+chrome.exe --disable-gpu
