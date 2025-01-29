@@ -1,3 +1,4 @@
+import { BulletPool } from "./bulletpull.js";
 class Game {
   constructor() {
     this.container = document.getElementById('gameContainer');
@@ -547,80 +548,8 @@ class EnemyGrid {
     }
   }
 }
-class BulletPool {
-  constructor(container, poolSize = 30) {
-    this.pool = [];
-    this.container = container;
-    
-    // Pre-initialize pool
-    for (let i = 0; i < poolSize; i++) {
-      const bullet = new Bullet(container, 0, 0, false);
-      bullet.active = false; // Make sure bullets start inactive
-      this.pool.push(bullet);
-    }
-  }
 
-  getBullet(x, y, isEnemy) {
-    // Find first inactive bullet
-    let bullet = this.pool.find(b => !b.active);
-    
-    // If no inactive bullets found, create a new one
-    if (!bullet) {
-      bullet = new Bullet(this.container, x, y, isEnemy);
-      this.pool.push(bullet);
-    }
-    
-    bullet.reset(x, y, isEnemy);
-    bullet.active = true; // Explicitly set active
-    return bullet;
-  }
-}
-class Bullet {
-  constructor(container, x, y, isEnemy = false) {
-    this.element = document.createElement('div');
-    this.element.className = `bullet ${isEnemy ? 'enemy-bullet' : 'player-bullet'}`;
-    this.x = x;
-    this.y = y;
-    this.speed = isEnemy ? 0.2 : -0.4;
-    this.active = false;
-    this.container = container;
-    this.init(container);
-  }
 
-  init(container) {
-    container.appendChild(this.element);
-    this.element.style.display = 'none';
-  }
-
-  update(deltaTime) {
-    if (!this.active) return;
-    
-    this.y += this.speed * deltaTime;
-    
-    // Update position
-    this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
-
-    // Check boundaries
-    if (this.y < 0 || this.y > 580) {
-      this.deactivate();
-    }
-  }
-
-  deactivate() {
-    this.active = false;
-    this.element.style.display = 'none';
-  }
-
-  reset(x, y, isEnemy) {
-    this.x = x;
-    this.y = y;
-    this.speed = isEnemy ? 0.2 : -0.4;
-    this.active = true;
-    this.element.className = `bullet ${isEnemy ? 'enemy-bullet' : 'player-bullet'}`;
-    this.element.style.display = 'block';
-    this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
-  }
-}
 class InputHandler {
   constructor(game) {
     this.keys = {
