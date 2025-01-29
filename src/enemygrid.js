@@ -1,3 +1,4 @@
+import { Enemy } from "./enemy.js";
 export class EnemyGrid {
     constructor(container) {
       this.container = container;
