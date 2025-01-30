@@ -1,12 +1,53 @@
-body{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+#gameContainer {
+  position: relative;
+  width: 800px;
+  height: 600px;
+  background-color: #000;
+  overflow: hidden;
+  margin: 0 auto;
 }
-.game{
-    width: 600px;
-    height: 800px;
-    background-color: black;
-    position: fixed;
+
+.player {
+  position: absolute;
+  bottom: 40px;
+  width: 30px;
+  height: 30px;
+  background-image: url('./ship.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  transform: translateX(0);
+  will-change: transform;
 }
+
+.enemy {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  will-change: transform;
+}
+
+.bullet {
+  position: absolute;
+  width: 2px;
+  height: 12px;
+  will-change: transform;
+}
+
+.player-bullet {
+  background-color: #fff;
+}
+
+.enemy-bullet {
+  background-color: #ff4444;
+}
+
+.hit-effect {
+  position: absolute;
+  pointer-events: none;
+  z-index: 50;
+  will-change: transform, opacity;
+}
+
+
